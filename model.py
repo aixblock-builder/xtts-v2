@@ -1,5 +1,5 @@
-from load_model import load_model
-load_model()
+# from load_model import load_model
+# load_model()
 
 import os
 import uuid
@@ -478,7 +478,11 @@ class MyModel(AIxBlockMLBase):
                     speaker_wav="male.wav",
                     language="en")
 
-            audio_base64 = wav_to_base64(wav)
+            with open(wav, "rb") as f:
+                audio_base64 = base64.b64encode(f.read()).decode("utf-8")
+
+            generated_url = f"/static/{os.path.basename(wav)}"
+
             predictions.append({
                 'result': [{
                     'from_name': "generated_text",
