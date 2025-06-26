@@ -1,45 +1,44 @@
-transformers==4.33.0
 TTS
-huggingface_hub
-accelerate>=0.31.0
-prometheus-client
-aixblock-ml
+spacy==3.8.7
+transformers==4.33.0
+torch==2.5.1 --index-url https://download.pytorch.org/whl/cu126
+torchaudio==2.5.1 --index-url https://download.pytorch.org/whl/cu126
 aixblock-sdk==0.0.5
 aixblock-tools
-tensorboardX
-gradio
-redis
-rq
-flask>=2.2
-flask-cors
-Werkzeug>=2.0
-gunicorn>=20.0
-colorama
-lxml
-appdirs
-gitpython
-opencv-python>=4.1.1
-numpy
-grafana-api
-datasets
-trl
-peft
-scipy
-bitsandbytes>=0.41.3
-langchain
-nvidia-ml-py
-wandb
-flask_swagger_ui
-pyyaml
-gradio_log
-tf-keras
-loguru
-about-time
+aixblock-ml
+huggingface_hub
 rich
 apscheduler
 fastapi
 uvicorn
 mcp
-torch==2.5.1 --index-url https://download.pytorch.org/whl/cu126
-torchaudio==2.5.1 --index-url https://download.pytorch.org/whl/cu126
-spaces
+colorama
+lxml
+appdirs
+loguru
+
+# prometheus-client
+# tensorboardX
+# gradio
+# redis
+# rq
+# flask
+# flask-cors
+# Werkzeug
+# gunicorn
+# appdirs
+# gitpython
+# opencv-python
+# numpy
+# grafana-api
+# trl
+# peft
+# scipy
+# bitsandbytes
+# nvidia-ml-py
+# wandb
+# flask_swagger_ui
+# pyyaml
+# gradio_log
+# tf-keras
+# about-time
