@@ -7,6 +7,7 @@ from fastapi.responses import FileResponse, RedirectResponse
 from mcp.server.sse import SseServerTransport
 from pydantic import BaseModel
 from starlette.routing import Mount
+from fastapi.staticfiles import StaticFiles
 
 from model import MyModel, mcp
 
@@ -31,7 +32,7 @@ class DashboardRequest(BaseModel):
 
 
 app = FastAPI(title="MyModel API", openapi_url="/swagger.json", docs_url="/swagger")
-
+app.mount("/static", StaticFiles(directory="."), name="static")
 # CORS configuration
 app.add_middleware(
     CORSMiddleware,
