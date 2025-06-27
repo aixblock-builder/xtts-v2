@@ -570,9 +570,139 @@ class MyModel(AIxBlockMLBase):
         
     @mcp.tool()
     def model(self, **kwargs):
-        from app import demo
-        gradio_app, local_url, share_url = demo.launch(share=True, quiet=True, prevent_thread_lock=True, server_name='0.0.0.0',show_error=True)
-        return {"share_url": share_url, 'local_url': local_url}
+        global model_demo, tokenizer_demo, model_loaded_demo, model_id_demo
+
+        model_id_demo = kwargs.get("model_id", "google/gemma-3-4b-it")
+        project_id = kwargs.get("project_id", 0)
+
+        print(
+            f"""\
+        Project ID: {project_id}
+        """
+        )
+        
+        MAX_INPUT_TOKEN_LENGTH = int(os.getenv("MAX_INPUT_TOKEN_LENGTH", "4096"))
+
+        DESCRIPTION = """\
+        # Gemma-3
+        """
+
+        if not torch.cuda.is_available():
+            DESCRIPTION += "\n<p>Running on CPU 🥶 This demo does not work on CPU.</p>"
+        if torch.cuda.is_bf16_supported():
+            compute_dtype = torch.bfloat16
+        else:
+            compute_dtype = torch.float16
+        bnb_config = BitsAndBytesConfig(
+            load_in_4bit=True,
+            bnb_4bit_quant_type="nf4",
+            bnb_4bit_compute_dtype=compute_dtype,
+            bnb_4bit_use_double_quant=True,
+        )
+
+        def load_model(model_id):
+            global model_demo, tokenizer_demo, model_loaded_demo
+            if torch.cuda.is_available() and not model_loaded_demo:
+                model_demo = AutoModelForCausalLM.from_pretrained(
+                    model_id,
+                    device_map="auto",
+                    token=hf_access_token,
+                    quantization_config=bnb_config,
+                    trust_remote_code=True,
+                    torch_dtype=compute_dtype,
+                )
+                tokenizer_demo = AutoTokenizer.from_pretrained(
+                    model_id, token=hf_access_token
+                )
+                tokenizer_demo.use_default_system_prompt = False
+                model_loaded_demo = True
+                return f"Model {model_id} loaded successfully!"
+            elif model_loaded_demo:
+                return "Model is already loaded! Please refresh the page to load a different model."
+            else:
+                return "Error: CUDA is not available!"
+
+        @spaces.GPU
+        def generate(
+            message: str,
+            chat_history: list[tuple[str, str]],
+            system_prompt: str,
+            max_new_tokens: int = 1024,
+            temperature: float = 0.6,
+            top_p: float = 0.9,
+            top_k: int = 50,
+            repetition_penalty: float = 1,
+        ) -> Iterator[str]:
+            if not model_loaded_demo:
+                return (
+                    "Please load the model first by clicking the 'Load Model' button."
+                )
+            chat_messages = []
+            if system_prompt:
+                chat_messages.append({"role": "system", "content": str(system_prompt)})
+
+            # Add chat history
+            for user_msg, assistant_msg in chat_history:
+                chat_messages.append({"role": "user", "content": str(user_msg)})
+                chat_messages.append(
+                    {"role": "assistant", "content": str(assistant_msg)}
+                )
+
+            # Add the current message
+            chat_messages.append({"role": "user", "content": str(message)})
+            text = tokenizer_demo.apply_chat_template(
+                chat_messages, tokenize=False, add_generation_prompt=True
+            )
+            model_inputs = tokenizer_demo([text], return_tensors="pt").to(
+                model_demo.device
+            )
+            if model_inputs.input_ids.shape[1] > MAX_INPUT_TOKEN_LENGTH:
+                model_inputs.input_ids = model_inputs.input_ids[
+                    :, -MAX_INPUT_TOKEN_LENGTH:
+                ]
+                gr.Warning(
+                    f"Trimmed input from conversation as it was longer than {MAX_INPUT_TOKEN_LENGTH} tokens."
+                )
+
+            generated_ids = model_demo.generate(**model_inputs, max_new_tokens=512)
+
+            generated_ids = [
+                output_ids[len(input_ids) :]
+                for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
+            ]
+            response = tokenizer_demo.batch_decode(
+                generated_ids, skip_special_tokens=True
+            )[0]
+            return response
+
+        chat_interface = gr.ChatInterface(
+            fn=generate,
+            stop_btn=gr.Button("Stop"),
+            examples=[
+                ["implement snake game using pygame"],
+                [
+                    "Can you explain briefly to me what is the Python programming language?"
+                ],
+                ["write a program to find the factorial of a number"],
+            ],
+        )
+
+        with gr.Blocks(css="style.css") as demo:
+            gr.Markdown(DESCRIPTION)
+            with gr.Row():
+                load_btn = gr.Button("Load Model")
+                status_text = gr.Textbox(label="Model Status", interactive=False)
+            load_btn.click(fn=lambda: load_model(model_id_demo), outputs=status_text)
+            chat_interface.render()
+
+        gradio_app, local_url, share_url = demo.launch(
+            share=True,
+            quiet=True,
+            prevent_thread_lock=True,
+            server_name="0.0.0.0",
+            show_error=True,
+        )
+        return {"share_url": share_url, "local_url": local_url}
     
     @mcp.tool()
     def model_trial(self, project, **kwargs):
