@@ -593,12 +593,6 @@ class MyModel(AIxBlockMLBase):
             compute_dtype = torch.bfloat16
         else:
             compute_dtype = torch.float16
-        bnb_config = BitsAndBytesConfig(
-            load_in_4bit=True,
-            bnb_4bit_quant_type="nf4",
-            bnb_4bit_compute_dtype=compute_dtype,
-            bnb_4bit_use_double_quant=True,
-        )
 
         def load_model(model_id):
             global model_demo, tokenizer_demo, model_loaded_demo
@@ -607,7 +601,6 @@ class MyModel(AIxBlockMLBase):
                     model_id,
                     device_map="auto",
                     token=hf_access_token,
-                    quantization_config=bnb_config,
                     trust_remote_code=True,
                     torch_dtype=compute_dtype,
                 )
@@ -692,8 +685,8 @@ class MyModel(AIxBlockMLBase):
             with gr.Row():
                 load_btn = gr.Button("Load Model")
                 status_text = gr.Textbox(label="Model Status", interactive=False)
-            load_btn.click(fn=lambda: load_model(model_id_demo), outputs=status_text)
-            chat_interface.render()
+            # load_btn.click(fn=lambda: load_model(model_id_demo), outputs=status_text)
+            # chat_interface.render()
 
         gradio_app, local_url, share_url = demo.launch(
             share=True,
