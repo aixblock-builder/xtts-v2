@@ -462,19 +462,24 @@ class MyModel(AIxBlockMLBase):
             if raw_input and raw_input != '[]': 
                 input_datas = json.loads(raw_input)
                 for input_data in input_datas:
-                    print(input_data)
+                    print("===input_data", input_data)
+                    name = input_data["name"]
+                    if not name.lower().endswith(".wav"):
+                        name += ".wav"
+                    file_path = name
+
                     if "http://" in input_data["data"] or "https://" in input_data["data"]:
                         input_audio= download_audio(input_data["data"],"audio.wav")
                     else:
                         input_audio= decode_base64_to_audio(base64_audio=input_data["data"])
                 
                     wav = tts.tts_to_file(text=prompt,
-                        file_path = f"{input_data['name']}.wav",
+                        file_path = file_path,
                         speaker_wav=input_audio,
                         language="en"
                     )
 
-                    print("wav", wav)
+                    print("===wav", wav)
 
                     with open(wav, "rb") as f:
                         audio_base64 = base64.b64encode(f.read()).decode("utf-8") 
@@ -490,6 +495,8 @@ class MyModel(AIxBlockMLBase):
                     file_path="output.wav",
                     speaker_wav="male.wav",
                     language="en")
+                
+                print("===wav", wav)
 
                 with open(wav, "rb") as f:
                     audio_base64 = base64.b64encode(f.read()).decode("utf-8")
@@ -518,7 +525,7 @@ class MyModel(AIxBlockMLBase):
                 }],
                 'model_version': ""
             })
-            print(predictions)
+            print("predictions", predictions)
             return {"message": "predict completed successfully", "result": predictions}
 
         
