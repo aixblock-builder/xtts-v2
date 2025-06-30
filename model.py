@@ -468,7 +468,7 @@ class MyModel(AIxBlockMLBase):
                         input_audio= decode_base64_to_audio(base64_audio=input_data["data"])
                 
                     wav = tts.tts_to_file(text=prompt,
-                        file_path=f"{input_data["name"]}.wav",
+                        file_path = f"{input_data['name']}.wav",
                         speaker_wav=input_audio,
                         language="en"
                     )
