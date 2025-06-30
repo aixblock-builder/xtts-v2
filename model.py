@@ -453,6 +453,7 @@ class MyModel(AIxBlockMLBase):
 
             predictions = []
             base64_output = []
+            result = []
             generated_url=""
             generated_text=""
             device = "cuda" if torch.cuda.is_available() else "cpu"
