@@ -466,22 +466,26 @@ class MyModel(AIxBlockMLBase):
                     name = input_data["name"]
                     if not name.lower().endswith(".wav"):
                         name += ".wav"
+
                     file_path = name
+                    print("===file_path", name)
 
                     if "http://" in input_data["data"] or "https://" in input_data["data"]:
                         input_audio= download_audio(input_data["data"],"audio.wav")
                     else:
                         input_audio= decode_base64_to_audio(base64_audio=input_data["data"])
+                    
+                    print("===input_audio", input_audio)
                 
-                    wav = tts.tts_to_file(text=prompt,
+                    tts.tts_to_file(text=prompt,
                         file_path = file_path,
                         speaker_wav=input_audio,
                         language="en"
                     )
 
-                    print("===wav", wav)
+                    print("===file_path", file_path)
 
-                    with open(wav, "rb") as f:
+                    with open(file_path, "rb") as f:
                         audio_base64 = base64.b64encode(f.read()).decode("utf-8") 
 
                     result.append({
@@ -491,7 +495,7 @@ class MyModel(AIxBlockMLBase):
                     print(result)
 
             else:
-                wav = tts.tts_to_file(text=prompt,
+                tts.tts_to_file(text=prompt,
                     file_path="output.wav",
                     speaker_wav="male.wav",
                     language="en")
