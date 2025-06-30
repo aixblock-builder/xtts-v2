@@ -404,7 +404,7 @@ class MyModel(AIxBlockMLBase):
             embscale = kwargs.get("embscale", 1)
             raw_input = kwargs.get("input", None)
             
-            def decode_base64_to_audio(base64_audio, output_file="output.wav"):
+            def decode_base64_to_audio(base64_audio, output_file="decode.wav"):
                 # Giải mã Base64 thành nhị phân
                 import base64
                 # import os  
@@ -469,12 +469,16 @@ class MyModel(AIxBlockMLBase):
 
                     file_path = name
                     print("===file_path", name)
-
-                    if "http://" in input_data["data"] or "https://" in input_data["data"]:
-                        input_audio= download_audio(input_data["data"],"audio.wav")
-                    else:
-                        input_audio= decode_base64_to_audio(base64_audio=input_data["data"])
-                    
+                    try:
+                        if "http://" in input_data["data"] or "https://" in input_data["data"]:
+                            print("===download")
+                            input_audio= download_audio(input_data["data"], "audio-download.wav")
+                        else:
+                            print("===decode")
+                            input_audio= decode_base64_to_audio(base64_audio=input_data["data"])
+                    except Exception as e:
+                        print(e)
+                        
                     print("===input_audio", input_audio)
                 
                     tts.tts_to_file(text=prompt,
