@@ -474,12 +474,16 @@ class MyModel(AIxBlockMLBase):
                         language="en"
                     )
 
+                    print("wav", wav)
+
                     with open(wav, "rb") as f:
                         audio_base64 = base64.b64encode(f.read()).decode("utf-8") 
 
                     result.append({
                         input_data["name"]: f"data:audio/wav;base64,{audio_base64}"
                     })
+
+                    print(result)
 
             else:
                 wav = tts.tts_to_file(text=prompt,
@@ -496,6 +500,8 @@ class MyModel(AIxBlockMLBase):
                     "data": f"data:audio/wav;base64,{audio_base64}"
                     # "url": generated_url
                 })
+
+                print(result)
 
             
 
