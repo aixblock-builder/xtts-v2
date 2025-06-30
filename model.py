@@ -474,10 +474,10 @@ class MyModel(AIxBlockMLBase):
                     )
 
                     with open(wav, "rb") as f:
-                        audio_base64 = base64.b64encode(f.read()).decode("utf-8")
+                        audio_base64 = base64.b64encode(f.read()).decode("utf-8") 
 
                     result.append({
-                        input_data["name"]: audio_base64,
+                        input_data["name"]: f"data:audio/wav;base64,{audio_base64}",
                         "url": generated_url
                     })
 
@@ -493,7 +493,7 @@ class MyModel(AIxBlockMLBase):
                 generated_url = f"/static/{os.path.basename(wav)}"
                 
                 result.append({
-                    "data": audio_base64,
+                    "data": f"data:audio/wav;base64,{audio_base64}",
                     "url": generated_url
                 })
 
