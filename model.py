@@ -404,16 +404,20 @@ class MyModel(AIxBlockMLBase):
             embscale = kwargs.get("embscale", 1)
             raw_input = kwargs.get("input", None)
             
-            def decode_base64_to_audio(base64_audio, output_file="decode.wav"):
-                # Giải mã Base64 thành nhị phân
-                import base64
-                # import os  
+            def decode_base64_to_audio(base64_audio, output_file="output.wav"):
+                if "," in base64_audio:
+                    base64_audio = base64_audio.split(",", 1)[1]
+
+                missing_padding = len(base64_audio) % 4
+                if missing_padding:
+                    base64_audio += "=" * (4 - missing_padding)
+
                 file_path = os.path.join(os.path.dirname(__file__), output_file)
+
                 audio_data = base64.b64decode(base64_audio)
-                
-                # Ghi dữ liệu nhị phân vào file âm thanh
                 with open(file_path, "wb") as audio_file:
                     audio_file.write(audio_data)
+
                 return file_path
 
             def download_audio(audio_url, save_path):
@@ -478,7 +482,7 @@ class MyModel(AIxBlockMLBase):
                             input_audio= decode_base64_to_audio(base64_audio=input_data["data"])
                     except Exception as e:
                         print(e)
-                        
+
                     print("===input_audio", input_audio)
                 
                     tts.tts_to_file(text=prompt,
